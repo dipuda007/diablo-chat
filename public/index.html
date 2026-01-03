@@ -14,6 +14,20 @@
 </head>
 
 <body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <!-- Welcome Screen -->
     <div id="welcome-screen" class="screen active">
         <div class="welcome-container">
@@ -22,9 +36,22 @@
             <div class="input-group">
                 <input type="text" id="nickname-input" placeholder="Enter your nickname" maxlength="20"
                     autocomplete="off">
-                <button id="join-btn" class="primary-btn">Join Chat</button>
+                <button id="join-btn" class="primary-btn">Enter</button>
             </div>
-            <p class="hint">No login required. Just pick a name and start chatting.</p>
+            <p class="hint">Anonymous chat. No signup required.</p>
+        </div>
+    </div>
+
+    <!-- Admin Password Screen -->
+    <div id="admin-password-screen" class="screen">
+        <div class="welcome-container">
+            <h1 class="logo">🔐 ADMIN</h1>
+            <p class="tagline">Authentication</p>
+            <div class="input-group">
+                <input type="password" id="admin-password-input" placeholder="Enter admin password" autocomplete="off">
+                <button id="admin-login-btn" class="primary-btn">Login</button>
+            </div>
+            <p id="admin-error" class="error-msg" style="display: none;">Invalid password</p>
         </div>
     </div>
 
@@ -53,6 +80,52 @@
         <div class="message-input-container">
             <input type="text" id="message-input" placeholder="Type a message..." maxlength="500" autocomplete="off">
             <button id="send-btn" class="send-btn">Send</button>
+        </div>
+    </div>
+
+    <!-- Admin Screen -->
+    <div id="admin-screen" class="screen">
+        <!-- Sidebar with Users -->
+        <div class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <h3>👥 Connected Users</h3>
+                <p id="admin-user-count">0 users</p>
+            </div>
+            <div id="users-list" class="users-list"></div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="admin-main">
+            <div class="chat-header">
+                <div class="header-left">
+                    <h2>🔥 ADMIN PANEL</h2>
+                </div>
+                <div class="header-right">
+                    <span class="status-indicator" id="admin-connection-status">●</span>
+                    <span id="admin-online-count">0</span> online
+                </div>
+            </div>
+
+            <div id="admin-messages-container" class="messages-container"></div>
+
+            <div id="admin-typing-indicator" class="typing-indicator" style="display: none;">
+                <span></span> is typing...
+            </div>
+
+            <div class="message-input-container">
+                <input type="text" id="admin-message-input" placeholder="Type as Admin..." maxlength="500"
+                    autocomplete="off">
+                <button id="admin-send-btn" class="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kicked Screen -->
+    <div id="kicked-screen" class="screen">
+        <div class="welcome-container">
+            <h2>🚫 You've been kicked</h2>
+            <p class="hint">You have been removed from the chatroom by an admin.</p>
+            <button onclick="location.reload()" class="primary-btn" style="margin-top: 1rem;">Rejoin</button>
         </div>
     </div>
 
