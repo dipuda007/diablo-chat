@@ -1,11 +1,11 @@
 {
-    "name": "Diablo Chat",
-    "short_name": "Diablo",
-    "description": "Anonymous real-time chat application",
+    "name": "Daddy Diablo Chatroom",
+    "short_name": "Daddy Diablo",
+    "description": "Anonymous real-time chatroom",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#1a1a2e",
-    "theme_color": "#1a1a2e",
+    "background_color": "#000000",
+    "theme_color": "#000000",
     "orientation": "portrait",
     "icons": [
         {
