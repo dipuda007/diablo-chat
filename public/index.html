@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diablo Chat</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/style.css">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+</head>
+
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="screen active">
+        <div class="welcome-container">
+            <h1 class="logo">🔥 DIABLO</h1>
+            <p class="tagline">Anonymous Chat</p>
+            <div class="input-group">
+                <input type="text" id="nickname-input" placeholder="Enter your nickname" maxlength="20"
+                    autocomplete="off">
+                <button id="join-btn" class="primary-btn">Join Chat</button>
+            </div>
+            <p class="hint">No login required. Just pick a name and start chatting.</p>
+        </div>
+    </div>
+
+    <!-- Chat Screen -->
+    <div id="chat-screen" class="screen">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-left">
+                <h2>🔥 DIABLO</h2>
+            </div>
+            <div class="header-right">
+                <span class="status-indicator" id="connection-status">●</span>
+                <span id="user-count">0</span> online
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messages-container" class="messages-container"></div>
+
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <span></span> is typing...
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-container">
+            <input type="text" id="message-input" placeholder="Type a message..." maxlength="500" autocomplete="off">
+            <button id="send-btn" class="send-btn">Send</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+</body>
+
+</html>
