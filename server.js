@@ -21,15 +21,17 @@ const ADMIN_PASSWORD = 'Dg@18122005';
 
 // In-memory storage
 const users = new Map(); // socket.id -> {nickname, color, ip, isAdmin}
+const userHistory = []; // Array of all users who ever connected {nickname, ip, joinTime, leaveTime}
 const messages = []; // Array of messages (keep last 100)
 const MAX_MESSAGES = 100;
+const MAX_HISTORY = 500;
 
 // Generate random color for user
 function getRandomColor() {
     const colors = [
-        '#e94560', '#ff6b6b', '#4ecdc4', '#45b7d1',
-        '#96ceb4', '#ffeaa7', '#dfe6e9', '#a29bfe',
-        '#fd79a8', '#fdcb6e', '#6c5ce7', '#00b894'
+        '#8b5cf6', '#a78bfa', '#7c3aed', '#6366f1',
+        '#818cf8', '#67e8f9', '#22d3ee', '#06b6d4',
+        '#14b8a6', '#2dd4bf', '#a5b4fc', '#c4b5fd'
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 }
@@ -60,13 +62,23 @@ io.on('connection', (socket) => {
     // Admin login
     socket.on('admin_login', (data) => {
         if (data.nickname === ADMIN_NICKNAME && data.password === ADMIN_PASSWORD) {
-            const userColor = getRandomColor();
+            const userColor = '#a855f7'; // Purple for admin
             users.set(socket.id, {
                 nickname: 'Admin',
-                color: '#ffd700',
+                color: userColor,
                 ip: clientIP,
                 isAdmin: true
             });
+
+            // Add to history
+            userHistory.push({
+                nickname: 'Admin',
+                ip: clientIP,
+                joinTime: Date.now(),
+                leaveTime: null,
+                isAdmin: true
+            });
+            if (userHistory.length > MAX_HISTORY) userHistory.shift();
 
             socket.emit('admin_login_success');
             socket.emit('load_messages', messages);
@@ -80,6 +92,9 @@ io.on('connection', (socket) => {
                 isAdmin: user.isAdmin
             }));
             socket.emit('users_list', usersList);
+
+            // Send user history
+            socket.emit('user_history', userHistory);
 
             io.emit('user_joined', {
                 nickname: 'Admin',
@@ -124,6 +139,16 @@ io.on('connection', (socket) => {
             isAdmin: false
         });
 
+        // Add to history
+        userHistory.push({
+            nickname,
+            ip: clientIP,
+            joinTime: Date.now(),
+            leaveTime: null,
+            isAdmin: false
+        });
+        if (userHistory.length > MAX_HISTORY) userHistory.shift();
+
         // Send existing messages to new user
         socket.emit('load_messages', messages);
 
@@ -167,7 +192,8 @@ io.on('connection', (socket) => {
             nickname: user.nickname,
             color: user.color,
             text,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            isAdmin: user.isAdmin
         };
 
         // Add to messages array
@@ -208,7 +234,15 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Admin: Delete message
+    // Admin: Get user history
+    socket.on('get_history', () => {
+        const user = users.get(socket.id);
+        if (user && user.isAdmin) {
+            socket.emit('user_history', userHistory);
+        }
+    });
+
+    // Admin: Delete message (can delete any message including own)
     socket.on('delete_message', (messageId) => {
         const user = users.get(socket.id);
         if (user && user.isAdmin) {
@@ -239,7 +273,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Admin: Rename user
+    // Admin: Rename user (including self)
     socket.on('rename_user', (data) => {
         const adminUser = users.get(socket.id);
         if (adminUser && adminUser.isAdmin) {
@@ -276,6 +310,16 @@ io.on('connection', (socket) => {
         const user = users.get(socket.id);
 
         if (user) {
+            // Update history with leave time
+            const historyEntry = userHistory.find(h =>
+                h.nickname === user.nickname &&
+                h.ip === user.ip &&
+                h.leaveTime === null
+            );
+            if (historyEntry) {
+                historyEntry.leaveTime = Date.now();
+            }
+
             users.delete(socket.id);
 
             // Broadcast user left

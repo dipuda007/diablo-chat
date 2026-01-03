@@ -57,7 +57,6 @@
 
     <!-- Chat Screen -->
     <div id="chat-screen" class="screen">
-        <!-- Header -->
         <div class="chat-header">
             <div class="header-left">
                 <h2>🔥 DADDY DIABLO</h2>
@@ -68,15 +67,12 @@
             </div>
         </div>
 
-        <!-- Messages Container -->
         <div id="messages-container" class="messages-container"></div>
 
-        <!-- Typing Indicator -->
         <div id="typing-indicator" class="typing-indicator" style="display: none;">
             <span></span> is typing...
         </div>
 
-        <!-- Message Input -->
         <div class="message-input-container">
             <input type="text" id="message-input" placeholder="Type a message..." maxlength="500" autocomplete="off">
             <button id="send-btn" class="send-btn">Send</button>
@@ -85,20 +81,25 @@
 
     <!-- Admin Screen -->
     <div id="admin-screen" class="screen">
-        <!-- Sidebar with Users -->
         <div class="admin-sidebar">
             <div class="admin-sidebar-header">
-                <h3>👥 Connected Users</h3>
-                <p id="admin-user-count">0 users</p>
+                <h3>👑 Admin Panel</h3>
+                <p id="admin-user-count">0 users online</p>
             </div>
-            <div id="users-list" class="users-list"></div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="online">Online</button>
+                <button class="admin-tab" data-tab="history">History</button>
+            </div>
+
+            <div id="users-list" class="users-list active"></div>
+            <div id="history-list" class="history-list"></div>
         </div>
 
-        <!-- Main Chat Area -->
         <div class="admin-main">
             <div class="chat-header">
                 <div class="header-left">
-                    <h2>🔥 ADMIN PANEL</h2>
+                    <h2>🔥 LIVE CHAT</h2>
                 </div>
                 <div class="header-right">
                     <span class="status-indicator" id="admin-connection-status">●</span>
@@ -129,7 +130,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/app.js"></script>
 </body>
