@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diablo-chat-v1';
+const CACHE_NAME = 'diablo-chat-v3';
 const urlsToCache = [
     '/',
     '/index.html',
@@ -9,21 +9,32 @@ const urlsToCache = [
 
 // Install service worker
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(urlsToCache))
     );
 });
 
-// Fetch from cache
+// Fetch from network first, fallback to cache
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => response || fetch(event.request))
+        fetch(event.request)
+            .then((response) => {
+                // Update cache with fresh response
+                if (response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => caches.match(event.request))
     );
 });
 
-// Update service worker
+// Activate and clear old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -34,6 +45,6 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim())
     );
 });
