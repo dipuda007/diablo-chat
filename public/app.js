@@ -110,11 +110,11 @@ function initSocket() {
     });
 
     socket.on('message_deleted', (messageId) => {
-        document.querySelectorAll(`[data-id="${messageId}"]`).forEach(el => el.remove());
+        document.querySelectorAll(`[data-msg-id="${messageId}"]`).forEach(el => el.remove());
     });
 
     socket.on('message_edited', (data) => {
-        document.querySelectorAll(`[data-id="${data.id}"]`).forEach(msgEl => {
+        document.querySelectorAll(`[data-msg-id="${data.id}"]`).forEach(msgEl => {
             const contentEl = msgEl.querySelector('.message-content');
             if (contentEl) {
                 contentEl.textContent = data.newText;
@@ -208,19 +208,52 @@ function renderUsersList(users) {
     users.forEach(user => {
         const userEl = document.createElement('div');
         userEl.className = 'user-item';
-        userEl.innerHTML = `
-            <div class="user-info">
-                <div class="user-nickname" style="color: ${user.color}">${user.nickname}</div>
-                <div class="user-ip">${user.ip}</div>
-            </div>
-            ${user.isAdmin ?
-                '<span class="admin-badge">ADMIN</span>' :
-                `<div class="user-actions">
-                    <button class="action-btn rename" onclick="renameUser('${user.id}', '${user.nickname}')">Rename</button>
-                    <button class="action-btn kick" onclick="kickUser('${user.id}')">Kick</button>
-                </div>`
-            }
+        userEl.dataset.oderId = user.id;
+        userEl.dataset.nickname = user.nickname;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'user-info';
+        infoDiv.innerHTML = `
+            <div class="user-nickname" style="color: ${user.color}">${user.nickname}</div>
+            <div class="user-ip">${user.ip}</div>
         `;
+        userEl.appendChild(infoDiv);
+
+        if (user.isAdmin) {
+            const badge = document.createElement('span');
+            badge.className = 'admin-badge';
+            badge.textContent = 'ADMIN';
+            userEl.appendChild(badge);
+        } else {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'user-actions';
+
+            const renameBtn = document.createElement('button');
+            renameBtn.className = 'action-btn rename';
+            renameBtn.textContent = 'Rename';
+            renameBtn.addEventListener('click', () => {
+                const newName = prompt('Enter new nickname:', user.nickname);
+                if (newName && newName.trim() && newName !== user.nickname) {
+                    socket.emit('rename_user', { oderId: user.id, newNickname: newName.trim() });
+                    setTimeout(() => socket.emit('get_users'), 200);
+                }
+            });
+
+            const kickBtn = document.createElement('button');
+            kickBtn.className = 'action-btn kick';
+            kickBtn.textContent = 'Kick';
+            kickBtn.addEventListener('click', () => {
+                if (confirm('Kick this user?')) {
+                    socket.emit('kick_user', user.id);
+                    setTimeout(() => socket.emit('get_users'), 200);
+                }
+            });
+
+            actionsDiv.appendChild(renameBtn);
+            actionsDiv.appendChild(kickBtn);
+            userEl.appendChild(actionsDiv);
+        }
+
         usersList.appendChild(userEl);
     });
 }
@@ -229,8 +262,6 @@ function renderHistoryList(history) {
     if (!historyList) return;
 
     historyList.innerHTML = '';
-
-    // Show most recent first
     const reversed = [...history].reverse();
 
     reversed.forEach(entry => {
@@ -271,36 +302,6 @@ adminTabs.forEach(tab => {
         }
     });
 });
-
-window.renameUser = function (oderId, currentName) {
-    const newName = prompt('Enter new nickname:', currentName);
-    if (newName && newName.trim() && newName !== currentName) {
-        socket.emit('rename_user', { oderId, newNickname: newName.trim() });
-        setTimeout(() => socket.emit('get_users'), 100);
-    }
-};
-
-window.kickUser = function (oderId) {
-    if (confirm('Kick this user?')) {
-        socket.emit('kick_user', oderId);
-    }
-};
-
-window.deleteMessage = function (messageId) {
-    socket.emit('delete_message', messageId);
-};
-
-window.editMessage = function (messageId) {
-    const msgEl = document.querySelector(`[data-id="${messageId}"]`);
-    if (msgEl) {
-        const contentEl = msgEl.querySelector('.message-content');
-        const currentText = contentEl.textContent;
-        const newText = prompt('Edit message:', currentText);
-        if (newText && newText.trim() && newText !== currentText) {
-            socket.emit('edit_message', { messageId, newText: newText.trim() });
-        }
-    }
-};
 
 joinBtn.addEventListener('click', () => {
     const nickname = nicknameInput.value.trim();
@@ -390,7 +391,7 @@ function addMessage(message, isOwn) {
 
     const messageEl = document.createElement('div');
     messageEl.className = `message ${isOwn ? 'own' : 'other'}`;
-    messageEl.setAttribute('data-id', message.id);
+    messageEl.dataset.msgId = message.id;
 
     const header = document.createElement('div');
     header.className = 'message-header';
@@ -425,10 +426,27 @@ function addMessage(message, isOwn) {
     if (isAdmin) {
         const actions = document.createElement('div');
         actions.className = 'admin-msg-actions';
-        actions.innerHTML = `
-            <button class="admin-msg-btn edit" onclick="editMessage('${message.id}')">Edit</button>
-            <button class="admin-msg-btn delete" onclick="deleteMessage('${message.id}')">Delete</button>
-        `;
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'admin-msg-btn edit';
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => {
+            const currentText = content.textContent;
+            const newText = prompt('Edit message:', currentText);
+            if (newText && newText.trim() && newText !== currentText) {
+                socket.emit('edit_message', { messageId: message.id, newText: newText.trim() });
+            }
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'admin-msg-btn delete';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+            socket.emit('delete_message', message.id);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
         messageEl.appendChild(actions);
     }
 
